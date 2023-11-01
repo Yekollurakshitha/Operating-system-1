@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define NUM_PROCESSES 3
+#define NUM_RESOURCES 3
+
+typedef struct {
+  int available[NUM_RESOURCES];
+  int allocation[NUM_RESOURCES];
+  int need[NUM_RESOURCES];
+  int max[NUM_RESOURCES];
+} Process;
+
+bool is_safe_state(Process processes[]) {
+  int work[NUM_RESOURCES];
+  bool finish[NUM_PROCESSES];
+  int i, j;
+
+  for (i = 0; i < NUM_RESOURCES; i++) {
+    work[i] = processes[0].available[i];
+  }
+
+  for (i = 0; i < NUM_PROCESSES; i++) {
+    finish[i] = false;
+  }
+
+  while (true) {
+    bool found = false;
+
+    for (i = 0; i < NUM_PROCESSES; i++) {
+      if (!finish[i] && processes[i].need[0] <= work[0] && processes[i].need[1] <= work[1] && processes[i].need[2] <= work[2]) {
+        finish[i] = true;
+        found = true;
+
+        for (j = 0; j < NUM_RESOURCES; j++) {
+          work[j] += processes[i].allocation[j];
+        }
+
+        break;
+      }
+    }
+
+    if (!found) {
+      break;
+    }
+  }
+
+  for (i = 0; i < NUM_PROCESSES; i++) {
+    if (!finish[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+int main() {
+  Process processes[NUM_PROCESSES];
+
+  // Read the current state of the system and the maximum requirements for each process from the user
+  for (int i = 0; i < NUM_PROCESSES; i++) {
+    printf("Enter the current state for process P%d:\n", i);
+    for (int j = 0; j < NUM_RESOURCES; j++) {
+      char resource_name = 'A' + j;
+      printf("Available instances of resource %c: ", resource_name);
+      scanf("%d", &processes[i].available[j]);
+    }
+
+    printf("Enter the maximum requirement for process P%d:\n", i);
+    for (int j = 0; j < NUM_RESOURCES; j++) {
+      char resource_name = 'A' + j;
+      printf("Instances of resource %c: ", resource_name);
+      scanf("%d", &processes[i].max[j]);
+    }
+
+    for (int j = 0; j < NUM_RESOURCES; j++) {
+      processes[i].allocation[j] = 0;
+      processes[i].need[j] = processes[i].max[j] - processes[i].allocation[j];
+    }
+  }
+
+  // Check if the system is in a safe state
+  if (is_safe_state(processes)) {
+    printf("Reena's operating system is in a safe state.\n");
+  } else {
+    printf("Reena's operating system is not in a safe state.\n");
+  }
+
+  return 0;
+}
